@@ -5,21 +5,29 @@ export default class Game extends Phaser.Scene {
     super("game");
   }
 
+  init() {
+    this.paddleRightVelocity = 0;
+  }
+
   preload() {}
 
   create() {
-    const ball = this.add.circle(400, 250, 10, 0xffffff).setOrigin(0.5);
-    this.physics.add.existing(ball);
-    ball.body.setBounce(1, 1);
+    this.ball = this.add.circle(400, 250, 10, 0xffffff).setOrigin(0.5);
+    this.physics.add.existing(this.ball);
+    this.ball.body.setBounce(1, 1);
 
-    ball.body.setCollideWorldBounds(true, 1, 1);
+    this.ball.body.setCollideWorldBounds(true, 1, 1);
 
-    ball.body.setVelocity(200, 200);
+    this.ball.body.setVelocity(200, 200);
 
     this.paddleLeft = this.add.rectangle(50, 250, 25, 100, 0xffffff, 1);
     this.physics.add.existing(this.paddleLeft, true);
 
-    this.physics.add.collider(this.paddleLeft, ball);
+    this.paddleRight = this.add.rectangle(750, 250, 25, 100, 0xffffff, 1);
+    this.physics.add.existing(this.paddleRight, true);
+
+    this.physics.add.collider(this.paddleLeft, this.ball);
+    this.physics.add.collider(this.paddleRight, this.ball);
 
     this.cursors = this.input.keyboard.createCursorKeys();
   }
@@ -32,5 +40,24 @@ export default class Game extends Phaser.Scene {
       this.paddleLeft.y += 10;
       this.paddleLeft.body.updateFromGameObject();
     }
+
+    if (Math.abs(this.ball.y - this.paddleRight.y) < 10) {
+      return;
+    }
+
+    if (this.ball.y < this.paddleRight.y) {
+      this.paddleRightVelocity += -3;
+      if (this.paddleRightVelocity < -10) {
+        this.paddleRightVelocity = -10;
+      }
+    } else if (this.ball.y > this.paddleRight.y) {
+      this.paddleRightVelocity += 3;
+      if (this.paddleRightVelocity > 10) {
+        this.paddleRightVelocity = 10;
+      }
+    }
+
+    this.paddleRight.y += this.paddleRightVelocity;
+    this.paddleRight.body.updateFromGameObject();
   }
 }
